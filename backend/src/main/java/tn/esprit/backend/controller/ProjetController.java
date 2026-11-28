@@ -1,7 +1,8 @@
 package tn.esprit.backend.controller;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import tn.esprit.backend.dto.ProjetDto;
 import tn.esprit.backend.entity.Projet;
 import tn.esprit.backend.service.IProjetService;
 
@@ -9,20 +10,18 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/projet")
-@AllArgsConstructor
-@CrossOrigin("*")
+@RequiredArgsConstructor
 public class ProjetController {
-
-    IProjetService projetService;
+    private final IProjetService projetService;
 
     @PostMapping("/add")
-    public Projet addProjet(@RequestBody Projet projet) {
-        return projetService.addProjet(projet);
+    public ProjetDto addProjet(@RequestBody ProjetDto dto) {
+        return toDto(projetService.addProjet(toEntity(dto)));
     }
 
     @PutMapping("/update")
-    public Projet updateProjet(@RequestBody Projet projet) {
-        return projetService.updateProjet(projet);
+    public ProjetDto updateProjet(@RequestBody ProjetDto dto) {
+        return toDto(projetService.updateProjet(toEntity(dto)));
     }
 
     @DeleteMapping("/delete/{id}")
@@ -31,12 +30,20 @@ public class ProjetController {
     }
 
     @GetMapping("/get/{id}")
-    public Projet getProjetById(@PathVariable Long id) {
-        return projetService.getProjetById(id);
+    public ProjetDto getProjetById(@PathVariable Long id) {
+        return toDto(projetService.getProjetById(id));
     }
 
     @GetMapping("/all")
-    public List<Projet> getAllProjets() {
-        return projetService.getAllProjets();
+    public List<ProjetDto> getAllProjets() {
+        return projetService.getAllProjets().stream().map(this::toDto).toList();
+    }
+
+    private Projet toEntity(ProjetDto dto) {
+        return Projet.builder().id(dto.id()).sujet(dto.sujet()).build();
+    }
+
+    private ProjetDto toDto(Projet projet) {
+        return projet == null ? null : new ProjetDto(projet.getId(), projet.getSujet());
     }
 }
